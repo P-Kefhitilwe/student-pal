@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Pal · Obsidian x StuDocu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <!-- Left Sidebar: primary nav -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-mark">SP</div>
+        <div class="logo-text">
+          <span class="logo-title">Student Pal</span>
+          <span class="logo-subtitle">Local-first learner hub</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Primary">
+        <button class="nav-item is-active" data-view="dashboard">
+          <span class="nav-dot"></span>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-view="courses">
+          <span class="nav-dot"></span>
+          <span>Courses</span>
+        </button>
+        <button class="nav-item" data-view="notes">
+          <span class="nav-dot"></span>
+          <span>Notes</span>
+        </button>
+        <button class="nav-item" data-view="tasks">
+          <span class="nav-dot"></span>
+          <span>Tasks</span>
+        </button>
+        <button class="nav-item" data-view="planner">
+          <span class="nav-dot"></span>
+          <span>Planner</span>
+        </button>
+        <button class="nav-item" data-view="exams">
+          <span class="nav-dot"></span>
+          <span>Exams</span>
+        </button>
+        <button class="nav-item" data-view="resources">
+          <span class="nav-dot"></span>
+          <span>Resources</span>
+        </button>
+        <button class="nav-item" data-view="budget">
+          <span class="nav-dot"></span>
+          <span>Budget</span>
+        </button>
+        <button class="nav-item" data-view="profile">
+          <span class="nav-dot"></span>
+          <span>Profile</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="ghost-btn" id="toggle-theme">
+          <span class="dot"></span>
+          <span>Deep AMOLED</span>
+        </button>
+        <span class="sidebar-meta">For students & professionals</span>
+      </div>
+    </aside>
+
+    <!-- Main region -->
+    <div class="main">
+      <!-- Top bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1 id="view-title" class="topbar-title">Dashboard</h1>
+          <p id="view-subtitle" class="topbar-subtitle">
+            Today's overview across courses, notes, and exams.
+          </p>
+        </div>
+        <div class="topbar-right">
+          <div class="search-group">
+            <span class="search-icon">⌕</span>
+            <input
+              id="global-search"
+              class="search-input"
+              type="search"
+              placeholder="Quick search across courses, notes, exams…"
+              autocomplete="off"
+            />
+          </div>
+          <button id="add-new" class="primary-btn">New</button>
+        </div>
+      </header>
+
+      <!-- Middle: 3‑pane Obsidian‑style layout -->
+      <div class="content-layout">
+        <!-- Context sidebar (left) -->
+        <section class="pane pane-secondary" aria-label="Context">
+          <header class="pane-header">
+            <span class="pane-title">Context</span>
+            <span class="pill" id="context-pill">Courses</span>
+          </header>
+          <div class="pane-body" id="context-pane">
+            <!-- JS: list of courses, notebooks, filters -->
+          </div>
+        </section>
+
+        <!-- Primary content (center) -->
+        <main class="pane pane-primary" aria-label="Main content">
+          <div id="view-root" class="view-root">
+            <!-- JS: active view mounted here (notes, tasks, exams, etc.) -->
+          </div>
+        </main>
+
+        <!-- Metadata / Info (right) -->
+        <aside class="pane pane-tertiary" aria-label="Metadata">
+          <header class="pane-header">
+            <span class="pane-title">Details</span>
+            <span class="pill pill-soft" id="details-pill">Today</span>
+          </header>
+          <div class="pane-body" id="details-pane">
+            <!-- JS: backlinks, tags, deadlines, stats -->
+          </div>
+        </aside>
+      </div>
+
+      <!-- Bottom status bar -->
+      <footer class="statusbar" aria-label="Status">
+        <div class="status-left">
+          <span id="status-text">Local vault · All changes saved</span>
+        </div>
+        <div class="status-right">
+          <span id="status-streak">Streak · 0 days</span>
+          <span class="status-dot"></span>
+          <span id="status-xp">XP · 0</span>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modals / overlays -->
+  <div id="modal-root" class="modal-root" aria-hidden="true"></div>
+
+  <!-- Scripts -->
+  <script src="core.js"></script>
+  <script src="notes.js"></script>
+  <script src="tasks.js"></script>
+  <script src="planner.js"></script>
+  <script src="database.js"></script>
+  <script src="profile.js"></script>
+  <script src="budget.js"></script>
+  <!-- optional future modules -->
+  <script src="courses.js"></script>
+  <script src="resources.js"></script>
+
+  <script>
+    // Basic shell wiring; main view logic stays in core.js
+    (function () {
+      const navButtons = document.querySelectorAll(".nav-item");
+      const viewTitle = document.getElementById("view-title");
+      const viewSubtitle = document.getElementById("view-subtitle");
+      const globalSearch = document.getElementById("global-search");
+      const addNewBtn = document.getElementById("add-new");
+      const statusText = document.getElementById("status-text");
+      const toggleTheme = document.getElementById("toggle-theme");
+      const app = window.App;
+
+      const VIEW_COPY = {
+        dashboard: {
+          title: "Dashboard",
+          subtitle: "Today's overview across courses, notes, and exams."
+        },
+        courses: {
+          title: "Courses",
+          subtitle: "Organize modules, syllabi, and key resources."
+        },
+        notes: {
+          title: "Notes",
+          subtitle: "Non-linear, linked notes for deep understanding."
+        },
+        tasks: {
+          title: "Tasks",
+          subtitle: "Capture, prioritize, and complete work."
+        },
+        planner: {
+          title: "Planner",
+          subtitle: "Plan weeks and carve out focused study blocks."
+        },
+        exams: {
+          title: "Exams",
+          subtitle: "Track upcoming assessments and high‑yield topics."
+        },
+        resources: {
+          title: "Resources",
+          subtitle: "Central hub for PDFs, links, and shared docs."
+        },
+        budget: {
+          title: "Budget",
+          subtitle: "Stay on top of your student finances."
+        },
+        profile: {
+          title: "Profile",
+          subtitle: "Shape your learner identity and goals."
+        }
+      };
+
+      function setActiveNav(view) {
+        navButtons.forEach((btn) => {
+          const v = btn.getAttribute("data-view");
+          btn.classList.toggle("is-active", v === view);
+        });
+      }
+
+      function switchView(view) {
+        if (!app || !app.navigate) return;
+        app.navigate(view);
+        setActiveNav(view);
+        const copy = VIEW_COPY[view] || VIEW_COPY.dashboard;
+        viewTitle.textContent = copy.title;
+        viewSubtitle.textContent = copy.subtitle;
+      }
+
+      navButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const view = btn.getAttribute("data-view");
+          switchView(view);
+        });
+      });
+
+      addNewBtn.addEventListener("click", () => {
+        if (!app || !app.addNewInCurrentView) return;
+        app.addNewInCurrentView();
+      });
+
+      globalSearch.addEventListener("input", (e) => {
+        if (!app || !app.setGlobalFilter) return;
+        app.setGlobalFilter(e.target.value);
+      });
+
+      toggleTheme.addEventListener("click", () => {
+        document.body.classList.toggle("amoled-deeper");
+        statusText.textContent = document.body.classList.contains("amoled-deeper")
+          ? "Deep AMOLED · Local vault"
+          : "Local vault · All changes saved";
+      });
+
+      if (app && app.bootstrap) {
+        app.bootstrap({
+          statusTextEl: statusText,
+          streakEl: document.getElementById("status-streak"),
+          xpEl: document.getElementById("status-xp"),
+          contextPane: document.getElementById("context-pane"),
+          detailsPane: document.getElementById("details-pane"),
+          viewRoot: document.getElementById("view-root")
+        });
+      }
+
+      switchView("dashboard");
+    })();
+  </script>
+</body>
+</html>
